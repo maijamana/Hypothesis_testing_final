@@ -1,0 +1,85 @@
+---
+title: "ARE BOYS INNATELY BETTER AT MATH AND DO SPORTS POSITIVELY IMPACT STUDENTS’ ACADEMIC SUCCESS?"
+output:
+  html_document:
+    df_print: paged
+---
+
+Research team: Andrii Ahitoliev, Ihor Ivanyshyn, Anastasiia Martsinkovska
+
+For the fisrt part of our team's research, we studied the differences in academic performance of boys and girls in
+highschools. Here we are testing the H0 (base hypothesis, that states no difference between two genders in math) vs. H1 which indicates that boys are performing better at math. 
+
+The dataset set we are using has numerous columns, but we are most interested in "Gender", "MathScore", "ReadingScore", "WritingScore" and "PracticeSport".
+
+```{r}
+library(ggplot2)
+students_data <- read.csv("Expanded_data_with_more_features.csv", stringsAsFactors = F)
+
+str(students_data)
+
+ggplot(students_data, aes(x = MathScore)) +
+  geom_histogram(binwidth = 1, fill = 'blue', color = 'black') +
+  labs(title = "Histogram of Math Scores", x = "Math Score", y = "Frequency") +
+  theme_minimal()
+
+summary(students_data$MathScore[students_data$Gender == 'male'])
+summary(students_data$MathScore[students_data$Gender == 'female'])
+
+t_test_result <- t.test(MathScore ~ Gender, data = students_data, var.equal = FALSE)
+
+print(t_test_result)
+
+ggplot(students_data, aes(x = Gender, y = MathScore, fill = Gender)) +
+  geom_boxplot(outlier.shape = NA) + 
+  geom_jitter(position = position_jitter(0), alpha = 0.5) + 
+  labs(title = "Distribution of Math Scores by Gender", x = "Gender", y = "Math Score") +
+  theme_minimal() +
+  theme(legend.position="none")
+
+```
+
+From the given t-test results, we can make the following conclusions:
+
+The t-statistic is -28.809. The negative sign indicates that the mean of the first group (female) is less than the mean of the second group (male).
+
+The p-value is less than 2.2e-16, which is practically zero. This is less than the common significance level of 0.05. Therefore, we reject the null hypothesis (H0) that there is no difference in means between the two groups. This suggests that there is a statistically significant difference in math scores between boys and girls.
+
+The mean math score for girls is 64.08065 and for boys is 69.06986. This indicates that, on average, boys scored higher than girls in this dataset.
+
+However, it’s important to note that these results are based on the data at hand and the specific statistical test used. They do not prove that one gender is innately better at math than the other.
+
+
+```{r}
+library(tidyverse)
+
+students_data$PracticeSport <- recode(students_data$PracticeSport, "never" = 0, "sometimes" = 1, "regularly" = 2)
+
+students_data$average_exam_score <- rowMeans(students_data[,c("MathScore", "ReadingScore", "WritingScore")])
+
+library(lmtest)
+
+model <- lm(average_exam_score ~ PracticeSport, data = students_data)
+summary(model)
+ggplot(students_data, aes(x = PracticeSport, y = average_exam_score, fill = as.factor(PracticeSport))) +
+  geom_boxplot() +
+  labs(title = "Average Exam Scores by Sports Practice",
+       x = "Sports Practice",
+       y = "Average Exam Score") +
+  theme_minimal()
+```
+
+
+In this study, we explored the relationship between sports practice and average exam scores among students. The dataset includes information on students' math, reading, and writing scores, as well as their level of sports practice categorized as "never," "sometimes," or "regularly."
+
+To begin, we applied label encoding to the "PracticeSport" column, transforming categorical values into numerical representations: "never" as 0, "sometimes" as 1, and "regularly" as 2.
+
+Next, we computed the average exam score for each student by taking the mean of their math, reading, and writing scores. This new variable, "average_exam_score," served as our response variable.
+
+We employed linear regression to investigate the relationship between sports practice and average exam scores. The linear model indicated a statistically significant association (p < 0.05) between sports practice and average exam scores. The summary statistics of the model are presented below:
+
+The results revealed that the average exam scores differed significantly among students with different levels of sports practice. To visualize this relationship, a boxplot was created, displaying the distribution of average exam scores for each category of sports practice.
+
+The boxplot illustrates clear variations in average exam scores based on the frequency of sports practice. Students who practiced sports regularly tended to have higher average exam scores compared to those who practiced sometimes or never.
+
+In conclusion, our analysis suggests a positive correlation between sports practice and academic performance, as reflected in average exam scores. However, it's essential to interpret these findings cautiously, considering potential confounding variables and the limitations of observational data. Further research and a more extensive dataset could provide deeper insights into the complex interplay between sports engagement and educational outcomes.s
